@@ -1,9 +1,5 @@
 package com.example.hifoz.lab2;
 
-/**
- * Created by Hifoz on 2/8/2018.
- */
-
 public class RSSItem {
     private String title;
     private String desc;

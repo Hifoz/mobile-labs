@@ -13,30 +13,40 @@ import java.util.ArrayList;
 * Custom adapter for rss items
 *
 * */
-public class RSSItemAdapter extends ArrayAdapter<String> {
+public class RSSItemAdapter extends ArrayAdapter<RSSItem> {
     private final Context context;
     private final ArrayList<RSSItem> items;
 
 
     public RSSItemAdapter(Context context, ArrayList<RSSItem> items) {
-        super(context, -1);
+        super(context,R.layout.rss_item_layout, items);
         this.context = context;
         this.items = items;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
-        LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        ViewHolder vh = new ViewHolder();
+        if(convertView == null){
+            LayoutInflater inflater = LayoutInflater.from(getContext());
+            convertView = inflater.inflate(R.layout.rss_item_layout, parent, false);
 
-        View itemView = inflater.inflate(R.layout.rss_item_layout, parent, false);
+            vh.title = convertView.findViewById(R.id.itemTitle);
+            vh.description = convertView.findViewById(R.id.itemDesc);
 
-        TextView title = itemView.findViewById(R.id.itemTitle);
-        TextView desc = itemView.findViewById(R.id.itemDesc);
-        title.setText(items.get(position).getTitle());
-        desc.setText(items.get(position).getDesc());
+            convertView.setTag(vh);
+        } else {
+            vh = (ViewHolder)convertView.getTag();
+        }
 
-        return itemView;
+        vh.title.setText(items.get(position).getTitle());
+        vh.description.setText(items.get(position).getDesc());
+
+        return convertView;
     }
 
-
+    private class ViewHolder{
+        TextView title;
+        TextView description;
+    }
 }

@@ -8,60 +8,45 @@
 
     <Button
         android:id="@+id/settingsBtn"
-        android:layout_width="67dp"
+        android:layout_width="wrap_content"
         android:layout_height="31dp"
-        android:layout_marginBottom="478dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginStart="317dp"
+        android:layout_marginTop="4dp"
         android:onClick="onSettingsClick"
         android:text="Settings"
         android:textSize="8sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/forceFetchBtn"
-        android:layout_width="67dp"
+        android:layout_width="wrap_content"
         android:layout_height="31dp"
-        android:layout_marginBottom="478dp"
-        android:layout_marginEnd="150dp"
-        android:layout_marginStart="317dp"
+        android:layout_marginTop="4dp"
         android:onClick="forceFetch"
         android:text="Force Fetch"
         android:textSize="8sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/settingsBtn"
+        app:layout_constraintStart_toEndOf="@+id/textView1"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textView1"
-        android:layout_width="60dp"
-        android:layout_height="19dp"
-        android:layout_marginBottom="9dp"
-        android:layout_marginEnd="256dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
+        android:layout_width="73dp"
+        android:layout_height="31dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
         android:text="RSS Feed"
-        app:layout_constraintBottom_toTopOf="@+id/rssFeedList"
-        app:layout_constraintEnd_toStartOf="@+id/settingsBtn"
+        android:textAllCaps="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ListView
         android:id="@+id/rssFeedList"
-        android:layout_width="365dp"
-        android:layout_height="449dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="50dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toBottomOf="@+id/textView1" />
 </android.support.constraint.ConstraintLayout>

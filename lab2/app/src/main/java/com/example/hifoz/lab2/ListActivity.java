@@ -11,17 +11,9 @@ import android.widget.ListView;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class ListActivity extends AppCompatActivity {
     ArrayList<RSSItem> rssItems = new ArrayList<>();
@@ -39,54 +31,17 @@ public class ListActivity extends AppCompatActivity {
 
     public void updateList(){
         ListView listView = findViewById(R.id.rssFeedList);
-
         RSSItemAdapter adapter = new RSSItemAdapter(this, rssItems);
-
         listView.setAdapter(adapter);
-
     }
 
 
     public void forceFetch(View view){
-        URL url = null;
-        try {
-            url = new URL("https://www.vg.no/rss/feed/?limit=25"); // TODO: use settings
-        } catch (Exception e){
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-            rssItems.add(new RSSItem("<foo>URL Error</foo>", "<foo>URL Error</foo>", ""));
-        }
-
         DownloadTask dt = new DownloadTask();
         dt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    @Deprecated
-    public String getFeed() {
-        String feed = "";
-        try {
-            URL url = new URL("https://www.vg.no/rss/feed/?limit=25"); // TODO: use settings
-
-            InputStreamReader isr = new InputStreamReader(url.openStream());
-            BufferedReader br = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            System.out.print(br.readLine());
-            String in;
-            while ((in = br.readLine()) != null) {
-                sb.append(in + "\n");
-            }
-            br.close();
-            feed = sb.toString();
-
-        } catch (Exception e){
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
-
-        return feed;
-    }
-
-    public void parseFeed(){
+    public void getFeed(){
         try{
             URL url = new URL("https://www.vg.no/rss/feed/?limit=25"); // TODO: use settings
             InputStream inputStream = url.openConnection().getInputStream();
@@ -157,20 +112,16 @@ public class ListActivity extends AppCompatActivity {
     }
 
 
-    private class DownloadTask extends AsyncTask<URL, Integer, String> {
+    private class DownloadTask extends AsyncTask<URL, Integer, Integer> {
 
         @Override
-        protected String doInBackground(URL... urls) {
-            parseFeed();
-            return "OK";
+        protected Integer doInBackground(URL... urls) {
+            getFeed();
+            return 1;
         }
 
-        protected void onPostExecute(String result){
+        protected void onPostExecute(Integer res){
             updateList();
-            for (RSSItem item:rssItems) {
-                System.out.println(item.getTitle() + " :: " + item.getDesc() + " :: " + item.getLink());
-            }
-            System.out.println(rssItems.size());
         }
     }
 
