@@ -29,6 +29,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="14dp"
+        android:entries="asdads, 12421413"
         app:layout_constraintBottom_toTopOf="@+id/textView4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -77,7 +78,7 @@
 
     <EditText
         android:id="@+id/feedLink"
-        android:layout_width="wrap_content"
+        android:layout_width="262dp"
         android:layout_height="35dp"
         android:layout_marginBottom="267dp"
         android:layout_marginEnd="211dp"
@@ -87,6 +88,18 @@
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.02"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:onClick="saveLink"
+        android:text="Save link"
+        android:textAllCaps="false"
+        android:textSize="10sp"
+        app:layout_constraintStart_toEndOf="@+id/feedLink"
+        tools:layout_editor_absoluteY="209dp" />
 </android.support.constraint.ConstraintLayout>

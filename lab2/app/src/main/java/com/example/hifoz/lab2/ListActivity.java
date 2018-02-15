@@ -1,11 +1,14 @@
 package com.example.hifoz.lab2;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Xml;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -22,6 +25,8 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+
+        updateList();
     }
 
     public void onSettingsClick(View view){
@@ -33,6 +38,17 @@ public class ListActivity extends AppCompatActivity {
         ListView listView = findViewById(R.id.rssFeedList);
         RSSItemAdapter adapter = new RSSItemAdapter(this, rssItems);
         listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Intent intent = new Intent(ListActivity.this, ReaderActivity.class);
+                intent.putExtra(rssItems.get(position).getLink(), "link");
+                ListActivity.this.startActivity(intent);
+
+            }
+        });
+
     }
 
 
@@ -43,7 +59,10 @@ public class ListActivity extends AppCompatActivity {
 
     public void getFeed(){
         try{
-            URL url = new URL("https://www.vg.no/rss/feed/?limit=25"); // TODO: use settings
+            SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+            String baseUrl = prefs.getString("feedLink", "https://www.vg.no/rss/feed/");
+            int limit = prefs.getInt("itemLimit", 10);
+            URL url = new URL(baseUrl + "?limit=" + limit);
             InputStream inputStream = url.openConnection().getInputStream();
 
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -89,14 +108,14 @@ public class ListActivity extends AppCompatActivity {
 
                 if (name.equalsIgnoreCase("title")) {
                     title = res;
-                } else if (name.equalsIgnoreCase("link")) {
-                    link = res;
                 } else if (name.equalsIgnoreCase("description")) {
                     description = res;
+                } else if (name.equalsIgnoreCase("link")) {
+                    link = res;
                 }
                 if (title != null && link != null && description != null) {
                     if(isItem) {
-                        RSSItem item = new RSSItem(title, link, description);
+                        RSSItem item = new RSSItem(title, description, link);
                         rssItems.add(item);
                     }
                     title = null;
@@ -116,6 +135,7 @@ public class ListActivity extends AppCompatActivity {
 
         @Override
         protected Integer doInBackground(URL... urls) {
+            rssItems = new ArrayList<>();
             getFeed();
             return 1;
         }

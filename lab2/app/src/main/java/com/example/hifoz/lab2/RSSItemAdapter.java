@@ -1,6 +1,7 @@
 package com.example.hifoz.lab2;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,12 +42,15 @@ public class RSSItemAdapter extends ArrayAdapter<RSSItem> {
 
         vh.title.setText(items.get(position).getTitle());
         vh.description.setText(items.get(position).getDesc());
+        vh.position = position;
 
         return convertView;
     }
 
+
     private class ViewHolder{
         TextView title;
         TextView description;
+        int position;
     }
 }
