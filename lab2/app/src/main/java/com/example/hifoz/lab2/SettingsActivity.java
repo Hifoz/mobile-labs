@@ -21,7 +21,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-
+        setTitle("RSS Reader: Settings");
         setupFrequencySpinner();
         setupLimitSpinner();
         setupLinkEditor();
@@ -30,8 +30,8 @@ public class SettingsActivity extends AppCompatActivity {
     private void setupFrequencySpinner(){
         Spinner spinner = findViewById(R.id.updateFrequencySpinner);
 
-        frequencies = new ArrayList<Integer>();
-        List<String> freqDisplayText = new ArrayList<String>();
+        frequencies = new ArrayList<>();
+        List<String> freqDisplayText = new ArrayList<>();
         frequencies.add(10);
         freqDisplayText.add("10 minutes");
         frequencies.add(30);
@@ -47,7 +47,7 @@ public class SettingsActivity extends AppCompatActivity {
         spinner.setAdapter(adapter);
 
         SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);;
-        spinner.setSelection(prefs.getInt("updateFreq", 2));
+        spinner.setSelection(prefs.getInt("updateFreqPos", 2));
 
 
         spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
@@ -56,6 +56,7 @@ public class SettingsActivity extends AppCompatActivity {
                 SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);;
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putInt("updateFreq", frequencies.get(position));
+                editor.putInt("updateFreqPos", position);
                 editor.apply();
             }
 
@@ -69,19 +70,19 @@ public class SettingsActivity extends AppCompatActivity {
     private void setupLimitSpinner(){
         Spinner spinner = findViewById(R.id.itemSpinner);
 
-        limits = new ArrayList<Integer>();
+        limits = new ArrayList<>();
         limits.add(10);
         limits.add(25);
         limits.add(50);
         limits.add(100);
 
 
-        ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(this, R.layout.support_simple_spinner_dropdown_item, limits);
+        ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, limits);
         spinner.setAdapter(adapter);
 
 
         SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);
-        spinner.setSelection(prefs.getInt("itemLimit", 1));
+        spinner.setSelection(prefs.getInt("itemLimitPos", 0));
 
         spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
             @Override
@@ -89,7 +90,9 @@ public class SettingsActivity extends AppCompatActivity {
                 SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putInt("itemLimit", limits.get(position));
+                editor.putInt("itemLimitPos", position);
                 editor.apply();
+                BackgroundLoadingService.updateNow();
             }
 
             @Override
@@ -103,10 +106,12 @@ public class SettingsActivity extends AppCompatActivity {
         editText.setText(prefs.getString("feedLink", ""));
     }
 
-    public void saveLink(View view){
+
+    public void saveRSSLink(View view){
         SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("feedLink", ((EditText)findViewById(R.id.feedLink)).getText().toString());
         editor.apply();
+        BackgroundLoadingService.updateNow();
     }
 }

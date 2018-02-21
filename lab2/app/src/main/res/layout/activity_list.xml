@@ -22,21 +22,20 @@
         android:id="@+id/forceFetchBtn"
         android:layout_width="wrap_content"
         android:layout_height="31dp"
+        android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:onClick="forceFetch"
-        android:text="Force Fetch"
+        android:text="Update Feed"
         android:textSize="8sp"
-        app:layout_constraintEnd_toStartOf="@+id/settingsBtn"
-        app:layout_constraintStart_toEndOf="@+id/textView1"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textView1"
         android:layout_width="73dp"
         android:layout_height="31dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="136dp"
         android:layout_marginTop="4dp"
-        android:text="RSS Feed"
         android:textAllCaps="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
