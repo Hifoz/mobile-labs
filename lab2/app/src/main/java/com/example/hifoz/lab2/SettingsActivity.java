@@ -25,8 +25,6 @@ public class SettingsActivity extends AppCompatActivity {
         setupFrequencySpinner();
         setupLimitSpinner();
         setupLinkEditor();
-
-
     }
 
     private void setupFrequencySpinner(){
@@ -48,14 +46,14 @@ public class SettingsActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, freqDisplayText);
         spinner.setAdapter(adapter);
 
-        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);;
         spinner.setSelection(prefs.getInt("updateFreq", 2));
 
 
         spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);;
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putInt("updateFreq", frequencies.get(position));
                 editor.apply();
@@ -82,13 +80,13 @@ public class SettingsActivity extends AppCompatActivity {
         spinner.setAdapter(adapter);
 
 
-        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);
         spinner.setSelection(prefs.getInt("itemLimit", 1));
 
         spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putInt("itemLimit", limits.get(position));
                 editor.apply();
@@ -101,13 +99,14 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void setupLinkEditor(){
         EditText editText = findViewById(R.id.feedLink);
-        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);
         editText.setText(prefs.getString("feedLink", ""));
     }
 
     public void saveLink(View view){
-        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("feedLink", ((EditText)findViewById(R.id.feedLink)).getText().toString());
+        editor.apply();
     }
 }

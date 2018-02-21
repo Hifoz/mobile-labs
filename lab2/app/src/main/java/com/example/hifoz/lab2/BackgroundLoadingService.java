@@ -1,18 +1,16 @@
 package com.example.hifoz.lab2;
 
-import android.content.BroadcastReceiver;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Xml;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
+import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -20,66 +18,68 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-public class ListActivity extends AppCompatActivity {
-    ArrayList<RSSItem> rssItems = new ArrayList<>();
-    private BroadcastReceiver broadcastReceiver;
+public class BackgroundLoadingService extends Service {
+    public static boolean isCreated = false;
+    public static ArrayList<RSSItem> rssItems;
+
+    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list);
+    public void onCreate(){
+        super.onCreate();
+        Toast.makeText(this, "Service created", Toast.LENGTH_SHORT).show();
 
-        if(!BackgroundLoadingService.isCreated){
-            Intent intent = new Intent(ListActivity.this, BackgroundLoadingService.class);
-            startService(intent);
-        }
-
-        createBroadcastReceiver();
-
-        updateList();
+        isCreated = true;
+        startDownload();
     }
 
 
-    private void createBroadcastReceiver() {
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                rssItems = (ArrayList<RSSItem>)(intent.getExtras().get("items"));
-                updateList();
-            }
-        };
-        LocalBroadcastManager.getInstance(ListActivity.this).registerReceiver(broadcastReceiver, new IntentFilter("rssUpdate"));
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId){
+        Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
 
-    }
-
-    public void onSettingsClick(View view){
-        ListActivity.this.startActivity(new Intent(ListActivity.this, SettingsActivity.class));
+        return Service.START_STICKY;
     }
 
 
-    public void updateList(){
-        ListView listView = findViewById(R.id.rssFeedList);
-        RSSItemAdapter adapter = new RSSItemAdapter(this, rssItems);
-        listView.setAdapter(adapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Intent intent = new Intent(ListActivity.this, ReaderActivity.class);
-                intent.putExtra(rssItems.get(position).getLink(), "link");
-                ListActivity.this.startActivity(intent);
-
-            }
-        });
-
+    @Override
+    public IBinder onBind(Intent intent) {
+        // TODO: Return the communication channel to the service.
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
 
-    public void forceFetch(View view){
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        Toast.makeText(this, "Service destroyed", Toast.LENGTH_SHORT).show();
+    }
+
+    private void startDownload(){
+        System.out.println("Starting download");
         DownloadTask dt = new DownloadTask();
         dt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        executor.schedule(new Runnable() {
+            @Override
+            public void run() {
+                startDownload();
+                broadcastData();
+            }
+        }, 5000, TimeUnit.MILLISECONDS); // getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE).getInt("updateFreq", 5000)
+    }
+
+
+    private void broadcastData(){
+        Intent intent = new Intent("rssUpdate");
+        intent.putExtra("items", rssItems);
+        LocalBroadcastManager.getInstance(BackgroundLoadingService.this).sendBroadcast(intent);
     }
 
 
@@ -94,12 +94,12 @@ public class ListActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(Integer res){
-            updateList();
         }
 
         public void getFeed(){
             try{
-                SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);;
+
+                SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);// PreferenceManager.getDefaultSharedPreferences(BackgroundLoadingService.this);
                 String baseUrl = prefs.getString("feedLink", "https://www.vg.no/rss/feed/");
                 int limit = prefs.getInt("itemLimit", 10);
                 URL url = new URL(baseUrl + "?limit=" + limit);
