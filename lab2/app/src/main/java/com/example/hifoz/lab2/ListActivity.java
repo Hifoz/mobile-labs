@@ -17,7 +17,7 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
-        setTitle("RSS Reader");
+        setTitle("RSS2.0 Reader");
         if(!BackgroundLoadingService.isCreated){
             Intent intent = new Intent(ListActivity.this, BackgroundLoadingService.class);
             startService(intent);

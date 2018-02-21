@@ -21,7 +21,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        setTitle("RSS Reader: Settings");
+        setTitle("RSS2.0 Reader: Settings");
         setupFrequencySpinner();
         setupLimitSpinner();
         setupLinkEditor();
