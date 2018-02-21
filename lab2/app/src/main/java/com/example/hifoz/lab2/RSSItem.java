@@ -1,5 +1,7 @@
 package com.example.hifoz.lab2;
 
+import android.webkit.WebView;
+
 public class RSSItem {
     private String title;
     private String desc;
@@ -9,6 +11,7 @@ public class RSSItem {
         this.title = title;
         this.desc = desc;
         this.link = link;
+
     }
 
     public String getTitle() {

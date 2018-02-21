@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Xml;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -23,39 +24,27 @@ import java.util.ArrayList;
 
 public class ListActivity extends AppCompatActivity {
     ArrayList<RSSItem> rssItems = new ArrayList<>();
-    private BroadcastReceiver broadcastReceiver;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
-
         if(!BackgroundLoadingService.isCreated){
             Intent intent = new Intent(ListActivity.this, BackgroundLoadingService.class);
             startService(intent);
         }
-
-        createBroadcastReceiver();
+        new RefreshTask().execute();
 
         updateList();
     }
 
-
-    private void createBroadcastReceiver() {
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                rssItems = (ArrayList<RSSItem>)(intent.getExtras().get("items"));
-                updateList();
-            }
-        };
-        LocalBroadcastManager.getInstance(ListActivity.this).registerReceiver(broadcastReceiver, new IntentFilter("rssUpdate"));
-
-    }
-
     public void onSettingsClick(View view){
         ListActivity.this.startActivity(new Intent(ListActivity.this, SettingsActivity.class));
+    }
+
+    public void forceFetch(){
+        getSystemService(BackgroundLoadingService.class).updateNow();
+        new RefreshTask().execute();
     }
 
 
@@ -67,113 +56,38 @@ public class ListActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Intent intent = new Intent(ListActivity.this, ReaderActivity.class);
-                intent.putExtra(rssItems.get(position).getLink(), "link");
-                ListActivity.this.startActivity(intent);
+                WebView webView = findViewById(R.id.webView);
+                webView.loadUrl(rssItems.get(position).getLink());
 
+                /*
+                Intent intent = new Intent(ListActivity.this, ReaderActivity.class);
+                intent.putExtra("link", rssItems.get(position).getLink());
+                intent.putExtra("title", rssItems.get(position).getTitle());
+                ListActivity.this.startActivity(intent);*/
             }
         });
 
     }
 
-
-    public void forceFetch(View view){
-        DownloadTask dt = new DownloadTask();
-        dt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-
-
-    private class DownloadTask extends AsyncTask<URL, Integer, Integer> {
+    private class RefreshTask extends AsyncTask<URL, Integer, Integer> {
 
         @Override
         protected Integer doInBackground(URL... urls) {
-            rssItems = new ArrayList<>();
-            getFeed();
+            while(BackgroundLoadingService.getFeed() == null){
+                try{
+                    Thread.sleep(1);
+                } catch (InterruptedException ie){
+                    ie.printStackTrace();
+                }
+            }
             return 1;
         }
 
         protected void onPostExecute(Integer res){
+            rssItems = BackgroundLoadingService.getFeed();
             updateList();
         }
 
-        public void getFeed(){
-            try{
-                SharedPreferences prefs = getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE);;
-                String baseUrl = prefs.getString("feedLink", "https://www.vg.no/rss/feed/");
-                int limit = prefs.getInt("itemLimit", 10);
-                URL url = new URL(baseUrl + "?limit=" + limit);
-                InputStream inputStream = url.openConnection().getInputStream();
-
-                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                factory.setNamespaceAware(true);
-
-                XmlPullParser parser = Xml.newPullParser();
-                parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-                parser.setInput(inputStream, null);
-
-
-                String title = null;
-                String link = null;
-                String description = null;
-                boolean isItem = false;
-
-                // Based on parser from https://www.androidauthority.com/simple-rss-reader-full-tutorial-733245/
-                while(parser.next() != XmlPullParser.END_DOCUMENT){
-                    int eventType = parser.getEventType();
-                    String name = parser.getName();
-
-                    if(name == null){
-                        continue;
-                    }
-
-                    if(eventType == XmlPullParser.END_TAG) {
-                        if(name.equalsIgnoreCase("item")) {
-                            isItem = false;
-                        }
-                        continue;
-                    }
-                    if(eventType == XmlPullParser.START_TAG) {
-                        if(name.equalsIgnoreCase("item")) {
-                            isItem = true;
-                            continue;
-                        }
-                    }
-
-                    String res = "";
-                    if (parser.next() == XmlPullParser.TEXT) {
-                        res = parser.getText();
-                        parser.nextTag();
-                    }
-
-                    if (name.equalsIgnoreCase("title")) {
-                        title = res;
-                    } else if (name.equalsIgnoreCase("description")) {
-                        description = res;
-                    } else if (name.equalsIgnoreCase("link")) {
-                        link = res;
-                    }
-                    if (title != null && link != null && description != null) {
-                        if(isItem) {
-                            RSSItem item = new RSSItem(title, description, link);
-                            rssItems.add(item);
-                        }
-                        title = null;
-                        link = null;
-                        description = null;
-                        isItem = false;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-
-
-
     }
-
-
 
 }

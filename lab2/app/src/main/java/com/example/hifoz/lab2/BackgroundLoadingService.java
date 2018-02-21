@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 public class BackgroundLoadingService extends Service {
     public static boolean isCreated = false;
-    public static ArrayList<RSSItem> rssItems;
+    private static ArrayList<RSSItem> rssItems;
 
     private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
@@ -34,8 +34,6 @@ public class BackgroundLoadingService extends Service {
     public void onCreate(){
         super.onCreate();
         Toast.makeText(this, "Service created", Toast.LENGTH_SHORT).show();
-
-        isCreated = true;
         startDownload();
     }
 
@@ -54,15 +52,7 @@ public class BackgroundLoadingService extends Service {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        Toast.makeText(this, "Service destroyed", Toast.LENGTH_SHORT).show();
-    }
-
     private void startDownload(){
-        System.out.println("Starting download");
         DownloadTask dt = new DownloadTask();
         dt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
@@ -70,18 +60,18 @@ public class BackgroundLoadingService extends Service {
             @Override
             public void run() {
                 startDownload();
-                broadcastData();
             }
-        }, 5000, TimeUnit.MILLISECONDS); // getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE).getInt("updateFreq", 5000)
+        }, getSharedPreferences("RSS_PREFS", Context.MODE_PRIVATE).getInt("updateFreq", 5000), TimeUnit.MILLISECONDS);
+    }
+
+    public void updateNow(){
+        executor.shutdown();
     }
 
 
-    private void broadcastData(){
-        Intent intent = new Intent("rssUpdate");
-        intent.putExtra("items", rssItems);
-        LocalBroadcastManager.getInstance(BackgroundLoadingService.this).sendBroadcast(intent);
+    public static ArrayList<RSSItem> getFeed(){
+        return rssItems;
     }
-
 
 
     private class DownloadTask extends AsyncTask<URL, Integer, Integer> {
@@ -136,6 +126,9 @@ public class BackgroundLoadingService extends Service {
                     if(eventType == XmlPullParser.START_TAG) {
                         if(name.equalsIgnoreCase("item")) {
                             isItem = true;
+                            title = null;
+                            link = null;
+                            description = null;
                             continue;
                         }
                     }
