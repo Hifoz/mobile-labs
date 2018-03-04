@@ -5,20 +5,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.PointF;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.View;
 import android.widget.Toast;
 
 public class BouncingBallView extends View {
-    RotationEventListener rotEventListener;
+    RotationEventListener rotationEventListener;
 
-    float dirX = -1; // todo: temp, only to be used until we get sensors working
-    float dirY = -1; // todo: temp, only to be used until we get sensors working
+    Point vel = new Point(0,0);
+    int isCollided = 0;
 
     int vWidth;
     int vHeight;
@@ -30,7 +26,7 @@ public class BouncingBallView extends View {
 
     public BouncingBallView(Context context, RotationEventListener rel) {
         super(context);
-        rotEventListener = rel;
+        rotationEventListener = rel;
 
         bgPadding = 10;
         bgPaint = new Paint();
@@ -68,7 +64,7 @@ public class BouncingBallView extends View {
 
     @Override
     protected void onDraw(Canvas canvas){
-        updateTilt();
+        updateVelocity();
         updateBall();
 
         canvas.drawRect(bgPadding, bgPadding, vWidth - bgPadding, vHeight - bgPadding, bgPaint);
@@ -78,19 +74,22 @@ public class BouncingBallView extends View {
     // PHYSICS:
 
     private void updateBall() {
-        Point velocity = new Point((int)dirX, (int)dirY);
+        Point newPos = new Point(ball.x + vel.x, ball.y + vel.y);
 
-        Point newPos = new Point(ball.x + velocity.x, ball.y + velocity.y);
 
         int collisionResult = testCollision(newPos);
-        if((collisionResult & 1) != 0) {
-            newPos.x = ball.x;
-            handleCollision();
-        }
-        if ((collisionResult & 2) != 0) {
-            newPos.y = ball.y;
-            handleCollision();
-        }
+
+        if(collisionResult != 0)
+            newPos = applyCollision(new Point(ball.x, ball.y), vel);
+
+        if((collisionResult & 1) != 0 && (isCollided & 1) == 0)
+                handleCollision();
+
+        if((collisionResult & 2) != 0 && (isCollided & 2) == 0)
+                handleCollision();
+
+        isCollided = collisionResult;
+
 
         ball.x = newPos.x;
         ball.y = newPos.y;
@@ -101,9 +100,25 @@ public class BouncingBallView extends View {
         int res = 0;
         if (pos.x <= bgPadding + ball.radius || pos.x >= vWidth - bgPadding - ball.radius)
             res += 1;
-        else if(pos.y <= bgPadding + ball.radius || pos.y >= vHeight - bgPadding - ball.radius)
+        if(pos.y <= bgPadding + ball.radius || pos.y >= vHeight - bgPadding - ball.radius)
             res += 2;
         return res;
+    }
+
+    private Point applyCollision(Point pos, Point velocity){
+        if(velocity.x > 0){
+            pos.x = Math.min(pos.x + vel.x, vWidth - bgPadding - ball.radius);
+        } else if( velocity.x < 0){
+            pos.x = Math.max(pos.x + vel.x, bgPadding + ball.radius);
+        }
+
+        if(velocity.y > 0){
+            pos.y = Math.min(pos.y + vel.y, vHeight - bgPadding - ball.radius);
+        } else if( velocity.y < 0){
+            pos.y = Math.max(pos.y + vel.y, bgPadding + ball.radius);
+        }
+
+        return pos;
     }
 
     private void handleCollision(){
@@ -125,22 +140,24 @@ public class BouncingBallView extends View {
 
     }
 
-    public void updateTilt(){
-        float[] rotation = rotEventListener.getTilt();
+    /**
+     * Updates the ball's velocity usign the device sensors
+     */
+    public void updateVelocity(){
+        float[] rotation = rotationEventListener.getTilt();
         int[] tilt = new int[2];
         tilt[0] = (int)Math.toDegrees(rotation[1]);
         tilt[1] = (int)Math.toDegrees(rotation[2]);
 
-        if(tilt[0] < -1)
-            dirX = 1;
-        else if(tilt[0] > 1)
-            dirX = -1;
+        int ignoredDegrees = 5;
 
-        if(tilt[1] < -1)
-            dirY = 1;
-        else if(tilt[1] > 1)
-            dirY = -1;
+        if(Math.abs(tilt[0]) > ignoredDegrees)
+            vel.x = (int)(-tilt[0] * 0.25f);
+        else vel.x = 0;
 
+        if(Math.abs(tilt[1]) > ignoredDegrees)
+            vel.y = (int)(-tilt[1] * 0.25f);
+        else vel.y = 0;
 
 
 
