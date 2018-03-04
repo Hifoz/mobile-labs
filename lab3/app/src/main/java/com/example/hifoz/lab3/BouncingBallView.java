@@ -1,5 +1,6 @@
 package com.example.hifoz.lab3;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,21 +9,24 @@ import android.graphics.Point;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.View;
-import android.widget.Toast;
 
+/**
+ * The view containing the game
+ */
+@SuppressLint("ViewConstructor") // For this use case of the vieww, the extra constructors are unnecessary
 public class BouncingBallView extends View {
-    RotationEventListener rotationEventListener;
+    private RotationEventListener rotationEventListener;
 
-    Point vel = new Point(0,0);
-    int isCollided = 0;
+    private Point vel = new Point(0,0);
+    private int isCollided = 0;
 
-    int vWidth;
-    int vHeight;
+    private int vWidth;
+    private int vHeight;
 
-    int bgPadding;
-    Paint bgPaint;
+    private int bgPadding;
+    private Paint bgPaint;
 
-    public static Ball ball;
+    private static Ball ball;
 
     public BouncingBallView(Context context, RotationEventListener rel) {
         super(context);
@@ -39,9 +43,15 @@ public class BouncingBallView extends View {
         startAnimation();
     }
 
-    // ANIMATION:
+    /*
+     * ANIMATION SECTION
+     *
+     * Makes the canvas re-draw regularly
+     */
+
 
     long mAnimStartTime;
+    private boolean isPlaying = false;
     private Handler mHandler = new Handler();
     private Runnable mTick = new Runnable() {
         public void run() {
@@ -50,17 +60,19 @@ public class BouncingBallView extends View {
         }
     };
 
-    void startAnimation() {
+    public void startAnimation() {
+        if(isPlaying)
+            return;
         mAnimStartTime = SystemClock.uptimeMillis();
         mHandler.removeCallbacks(mTick);
         mHandler.post(mTick);
+        isPlaying = true;
     }
 
-    void stopAnimation() {
+    public void stopAnimation() {
         mHandler.removeCallbacks(mTick);
+        isPlaying = false;
     }
-
-    // DRAW:
 
     @Override
     protected void onDraw(Canvas canvas){
@@ -71,8 +83,15 @@ public class BouncingBallView extends View {
         canvas.drawCircle(ball.x, ball.y, ball.radius, ball.paint);
     }
 
-    // PHYSICS:
+    /*
+     * GAME UPDATE SECTION
+     *
+     * Updates the ball
+     */
 
+    /**
+     * Updates the ball's position and plays feedback if there is a collision
+     */
     private void updateBall() {
         Point newPos = new Point(ball.x + vel.x, ball.y + vel.y);
 
@@ -82,20 +101,20 @@ public class BouncingBallView extends View {
         if(collisionResult != 0)
             newPos = applyCollision(new Point(ball.x, ball.y), vel);
 
-        if((collisionResult & 1) != 0 && (isCollided & 1) == 0)
-                handleCollision();
-
-        if((collisionResult & 2) != 0 && (isCollided & 2) == 0)
-                handleCollision();
+        if(((collisionResult & 1) != 0 && (isCollided & 1) == 0) || ((collisionResult & 2) != 0 && (isCollided & 2) == 0))
+            ((BouncingBallActivity)getContext()).playSound();
 
         isCollided = collisionResult;
 
-
         ball.x = newPos.x;
         ball.y = newPos.y;
-
     }
 
+    /**
+     * Tests if the ball will collide
+     * @param pos position to test
+     * @return if the ball is collidiong at given position
+     */
     private int testCollision(Point pos){
         int res = 0;
         if (pos.x <= bgPadding + ball.radius || pos.x >= vWidth - bgPadding - ball.radius)
@@ -105,6 +124,12 @@ public class BouncingBallView extends View {
         return res;
     }
 
+    /**
+     * Make the ball move as far as it can given its velocity, without colliding
+     * @param pos the position of the ball
+     * @param velocity the velocity of the ball
+     * @return the new position
+     */
     private Point applyCollision(Point pos, Point velocity){
         if(velocity.x > 0){
             pos.x = Math.min(pos.x + vel.x, vWidth - bgPadding - ball.radius);
@@ -121,11 +146,29 @@ public class BouncingBallView extends View {
         return pos;
     }
 
-    private void handleCollision(){
-        Toast.makeText(getContext(), "Pling~~", Toast.LENGTH_SHORT).show();
+    /**
+     * Updates the ball's velocity usign the device sensors
+     */
+    public void updateVelocity(){
+        float[] rotation = rotationEventListener.getEulerRotation();
+        int[] tilt = new int[2];
+        tilt[0] = (int)Math.toDegrees(rotation[1]);
+        tilt[1] = (int)Math.toDegrees(rotation[2]);
+
+        int ignoredDegrees = 2;
+
+        if(Math.abs(tilt[0]) > ignoredDegrees)
+            vel.x = (int)(-tilt[0] * 0.25f);
+        else vel.x = 0;
+
+        if(Math.abs(tilt[1]) > ignoredDegrees)
+            vel.y = (int)(-tilt[1] * 0.25f);
+        else vel.y = 0;
     }
 
-    // MISC:
+    /*
+     * MISC
+     */
 
     @Override
     protected void onSizeChanged(int w, int h, int oldW, int oldH){
@@ -140,27 +183,4 @@ public class BouncingBallView extends View {
 
     }
 
-    /**
-     * Updates the ball's velocity usign the device sensors
-     */
-    public void updateVelocity(){
-        float[] rotation = rotationEventListener.getTilt();
-        int[] tilt = new int[2];
-        tilt[0] = (int)Math.toDegrees(rotation[1]);
-        tilt[1] = (int)Math.toDegrees(rotation[2]);
-
-        int ignoredDegrees = 5;
-
-        if(Math.abs(tilt[0]) > ignoredDegrees)
-            vel.x = (int)(-tilt[0] * 0.25f);
-        else vel.x = 0;
-
-        if(Math.abs(tilt[1]) > ignoredDegrees)
-            vel.y = (int)(-tilt[1] * 0.25f);
-        else vel.y = 0;
-
-
-
-        //Toast.makeText(getContext(), rotation[0] + ", " + rotation[1] + ", " + rotation[2], Toast.LENGTH_SHORT).show();
-    }
 }

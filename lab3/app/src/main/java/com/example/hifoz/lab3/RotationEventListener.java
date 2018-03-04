@@ -7,10 +7,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.renderscript.Matrix4f;
 
-
+/**
+ * Used to listen for changes on the rotation of the device
+ */
 public class RotationEventListener implements SensorEventListener {
     public Context context;
-    Matrix4f rotMatrix = new Matrix4f();
+    private Matrix4f rotMatrix = new Matrix4f();
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -29,7 +31,7 @@ public class RotationEventListener implements SensorEventListener {
      * Gets the euler rotation of the phone
      * @return a float[3] with the euler rotation
      */
-    public float[] getTilt(){
+    public float[] getEulerRotation(){
         float[] rad = new float[3];
         SensorManager.getOrientation(rotMatrix.getArray(), rad);
         return rad;
