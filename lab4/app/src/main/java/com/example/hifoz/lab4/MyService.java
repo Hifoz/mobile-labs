@@ -4,15 +4,11 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 public class MyService extends Service {
 
 
     public MyService() {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference dbRef = database.getReference();
 
     }
 
