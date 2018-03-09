@@ -9,17 +9,13 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -59,11 +55,9 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
           new ChatFragment(), new FriendsList()
         };
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
+
         tabPagerAdapter = new TabPagerAdapter(getSupportFragmentManager(), fragments);
 
-        // Set up the ViewPager with the sections adapter.
         viewPager = findViewById(R.id.container);
         viewPager.setAdapter(tabPagerAdapter);
 
@@ -73,9 +67,13 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         setupSnapshotListener();
     }
 
+    /**
+     * Setup a listener to listen for new messages
+     * On first call, this will get all messages stored
+     */
     private void setupSnapshotListener() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("messages").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        db.collection("messages").orderBy("d").addSnapshotListener(new EventListener<QuerySnapshot>() {
 
             @Override
             public void onEvent(@Nullable QuerySnapshot documentSnapshots, @Nullable FirebaseFirestoreException e) {

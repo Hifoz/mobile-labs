@@ -11,6 +11,8 @@
         android:layout_width="0dp"
         android:layout_height="20dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="7dp"
         android:text="Username"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,10 +21,10 @@
 
     <TextView
         android:id="@+id/messageTimeStamp"
-        android:layout_width="64dp"
+        android:layout_width="wrap_content"
         android:layout_height="20dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="1dp"
+        android:layout_marginTop="8dp"
         android:text="08.03.2018"
         android:textSize="12sp"
         android:textStyle="italic"
@@ -33,10 +35,14 @@
         android:id="@+id/messageContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp"
         android:text="This is a message"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/messageUser" />
+        app:layout_constraintTop_toBottomOf="@+id/messageUser"
+        app:layout_constraintVertical_bias="0.0" />
 </android.support.constraint.ConstraintLayout>

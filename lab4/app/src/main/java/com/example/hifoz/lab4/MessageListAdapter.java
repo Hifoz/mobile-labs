@@ -1,6 +1,7 @@
 package com.example.hifoz.lab4;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +12,8 @@ import java.util.ArrayList;
 
 
 public class MessageListAdapter extends ArrayAdapter<Message> {
-    Context context;
-    ArrayList<Message> messages;
+    private Context context;
+    private ArrayList<Message> messages;
 
     public MessageListAdapter(Context context, ArrayList<Message> messages) {
         super(context, R.layout.message_layout, messages);
@@ -20,6 +21,7 @@ public class MessageListAdapter extends ArrayAdapter<Message> {
         this.messages = messages;
     }
 
+    @NonNull
     @Override
     public View getView(int pos, View convertView, ViewGroup parent){
         ViewHolder vHolder = new ViewHolder();
@@ -41,6 +43,7 @@ public class MessageListAdapter extends ArrayAdapter<Message> {
         vHolder.messageUser.setText(messages.get(pos).u);
         vHolder.messageTimeStamp.setText(messages.get(pos).d);
         vHolder.messageContent.setText(messages.get(pos).m);
+        vHolder.position = pos;
 
         return convertView;
     }
