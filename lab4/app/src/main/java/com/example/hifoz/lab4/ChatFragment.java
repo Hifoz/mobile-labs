@@ -1,7 +1,6 @@
 package com.example.hifoz.lab4;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,17 +9,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-
 
 
 /**
@@ -28,12 +27,14 @@ import java.util.HashMap;
  */
 public class ChatFragment extends Fragment {
     OnMessageSubmitListener callback;
+    private ArrayList<Message> messageList;
 
     FirebaseFirestore firestoreDB = FirebaseFirestore.getInstance();
 
-    public ChatFragment() {
-        // Required empty public constructor
-    }
+    /**
+     * Required empty constructor because Fragment
+     */
+    public ChatFragment() {}
 
 
     @Override
@@ -43,19 +44,35 @@ public class ChatFragment extends Fragment {
     }
 
 
+    public void updateMessageList(ArrayList<DocumentSnapshot> documents){
+        if(messageList == null)
+            messageList = new ArrayList<>();
+
+        for(DocumentSnapshot doc : documents){
+            Message newMessage = new Message(doc);
+            messageList.add(newMessage);
+        }
+
+
+        MessageListAdapter mla = new MessageListAdapter(getContext(), messageList);
+        ListView lv = getActivity().findViewById(R.id.chatLV);
+        lv.setAdapter(mla);
+        // todo adjust scroll to bottom if user was at the bottom before change, otherwise maybe show indicator for new messages?
+    }
+
+
+
+
     /**
      * Send the message to the server
      */
     public void submitMessage() {
 
-        EditText et = getActivity().findViewById(R.id.messageET);
+        final EditText et = getActivity().findViewById(R.id.messageET);
         String messageText = et.getText().toString();
-        System.out.println(messageText);
 
         if(messageText.isEmpty())
             return;
-
-
 
         HashMap<String, Object> message = new HashMap<>();
         message.put("d", System.currentTimeMillis());
@@ -63,34 +80,31 @@ public class ChatFragment extends Fragment {
         message.put("m", messageText);
 
         firestoreDB.collection("messages")
-                .add(message)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Toast.makeText(getActivity(), "Message sent.", Toast.LENGTH_SHORT).show();
-                        System.out.println("Message sent.");
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getActivity(), "Failed to send message.", Toast.LENGTH_LONG).show();
-                        System.out.println("Failed to send message.");
-                    }
-                }).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentReference> task) {
-                System.out.println("complete");
+            .add(message)
+            .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+                    Toast.makeText(getActivity(), "Message sent.", Toast.LENGTH_SHORT).show();
+                    System.out.println("Message sent.");
+                    et.setText("");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getActivity(), "Failed to send message.", Toast.LENGTH_LONG).show();
+                    System.out.println("Failed to send message.");
+                }
             }
-        });
+        );
 
-        et.setText("");
 
     }
 
 
     /**
-     * An interface that is required to implement oin any activity using this fragment
-     * To make sure it has the onMessageSubmit(View) function that is called by a button in the fragment XML
+     * An interface that is required to implement on any activity using this fragment
+     * To make sure it has the onMessageSubmit(View) function that is called by a button in the fragment XML.
+     * This Listener can also be made to serve as a communications channel to the activity and other fragments
      */
     public interface OnMessageSubmitListener{
         void onMessageSubmit(View v);
@@ -109,4 +123,11 @@ public class ChatFragment extends Fragment {
             throw new ClassCastException(getActivity().toString() + "must implement OnMessageSubmitListener");
         }
     }
+
+
+    public void onMessageSubmit(View v){
+        callback.onMessageSubmit(v);
+    }
+
+
 }

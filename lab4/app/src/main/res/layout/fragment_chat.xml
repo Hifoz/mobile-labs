@@ -30,8 +30,6 @@
             android:text="send"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
-        <!-- The reason for the onClick showing an error, is because the function it calls doesn't exist in the fragment,
-        but has to exist in the activity, where it ends up actually being called -->
 
         <ListView
             android:id="@+id/chatLV"

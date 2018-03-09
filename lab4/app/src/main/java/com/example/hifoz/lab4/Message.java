@@ -1,6 +1,8 @@
 package com.example.hifoz.lab4;
 
 
+import com.google.firebase.firestore.DocumentSnapshot;
+
 import java.util.Date;
 
 public class Message {
@@ -8,18 +10,12 @@ public class Message {
     public String u;
     public String m;
 
-    public Message(){
+    public Message(){}
 
+    public Message(DocumentSnapshot doc){
+        d = "" + (long)doc.get("d");
+        u = (String)doc.get("u");
+        m = (String)doc.get("m");
     }
 
-    /**
-     * Create a new Message
-     * @param user username
-     * @param message message contents
-     */
-    public Message(String user, String message){
-        u = user;
-        m = message;
-        Date date = new Date();
-    }
 }

@@ -1,10 +1,10 @@
 package com.example.hifoz.lab4;
 
-import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+// TODO make tabs have pretty icons
 /**
  * Adapter for the tab pager
  */
