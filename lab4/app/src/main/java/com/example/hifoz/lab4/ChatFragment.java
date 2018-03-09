@@ -28,6 +28,8 @@ import java.util.HashMap;
 public class ChatFragment extends Fragment {
     OnMessageSubmitListener callback;
     private ArrayList<Message> messageList;
+    private ArrayList<Message> displayedMessagesList;
+    String displayedName = "Show All";
 
     FirebaseFirestore firestoreDB = FirebaseFirestore.getInstance();
 
@@ -47,21 +49,40 @@ public class ChatFragment extends Fragment {
     public void updateMessageList(ArrayList<DocumentSnapshot> documents){
         if(messageList == null)
             messageList = new ArrayList<>();
+        if(displayedMessagesList == null)
+            displayedMessagesList = new ArrayList<>();
 
         for(DocumentSnapshot doc : documents){
             Message newMessage = new Message(doc);
             messageList.add(newMessage);
+            if(newMessage.u.equalsIgnoreCase(displayedName) || displayedName.equalsIgnoreCase("show all"))
+                displayedMessagesList.add(newMessage);
         }
+        updateMessagesListView();
+    }
 
-
-        MessageListAdapter mla = new MessageListAdapter(getContext(), messageList);
+    private void updateMessagesListView(){
+        MessageListAdapter mla = new MessageListAdapter(getContext(), displayedMessagesList);
         ListView lv = getActivity().findViewById(R.id.chatLV);
         lv.setAdapter(mla);
         // todo adjust scroll to bottom if user was at the bottom before change, otherwise maybe show indicator for new messages?
     }
 
 
-
+    public void updateDisplayedList(String name) {
+        System.out.println(name);
+        displayedName = name;
+        if(name.equalsIgnoreCase("show all")){
+            displayedMessagesList = new ArrayList<>(messageList);
+        } else{
+            displayedMessagesList = new ArrayList<>();
+            for(Message message : messageList){
+                if(message.u.equalsIgnoreCase(name))
+                    displayedMessagesList.add(message);
+            }
+        }
+        updateMessagesListView();
+    }
 
     /**
      * Send the message to the server
@@ -80,25 +101,26 @@ public class ChatFragment extends Fragment {
         message.put("m", messageText);
 
         firestoreDB.collection("messages")
-            .add(message)
-            .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
-                @Override
-                public void onSuccess(DocumentReference documentReference) {
-                    Toast.makeText(getActivity(), "Message sent.", Toast.LENGTH_SHORT).show();
-                    System.out.println("Message sent.");
-                    et.setText("");
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(getActivity(), "Failed to send message.", Toast.LENGTH_LONG).show();
-                    System.out.println("Failed to send message.");
-                }
-            }
+                .add(message)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Toast.makeText(getActivity(), "Message sent.", Toast.LENGTH_SHORT).show();
+                        System.out.println("Message sent.");
+                        et.setText("");
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(getActivity(), "Failed to send message.", Toast.LENGTH_LONG).show();
+                                                System.out.println("Failed to send message.");
+                                            }
+                                        }
         );
 
 
     }
+
 
 
     /**

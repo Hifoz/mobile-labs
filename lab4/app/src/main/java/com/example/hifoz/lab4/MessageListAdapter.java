@@ -12,18 +12,16 @@ import java.util.ArrayList;
 
 
 public class MessageListAdapter extends ArrayAdapter<Message> {
-    private Context context;
     private ArrayList<Message> messages;
 
     public MessageListAdapter(Context context, ArrayList<Message> messages) {
         super(context, R.layout.message_layout, messages);
-        this.context = context;
         this.messages = messages;
     }
 
     @NonNull
     @Override
-    public View getView(int pos, View convertView, ViewGroup parent){
+    public View getView(int pos, View convertView, @NonNull ViewGroup parent){
         ViewHolder vHolder = new ViewHolder();
 
         if(convertView == null){

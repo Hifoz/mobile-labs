@@ -24,7 +24,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements ChatFragment.OnMessageSubmitListener{
+public class MainActivity extends AppCompatActivity implements ChatFragment.OnMessageSubmitListener, FriendsListFragment.OnUserSelectListener{
     Fragment[] fragments;
 
 
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
 
 
         // Todo: Let the user select username themselves and store that name for future use
-        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName("Bob").build();
+        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName("Alice").build();
         FBAuthInfo.user.updateProfile(profileUpdate);
 
 
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
 
 
         fragments = new Fragment[]{
-          new ChatFragment(), new FriendsList()
+          new ChatFragment(), new FriendsListFragment()
         };
 
 
@@ -89,8 +89,10 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
                     if(dc.getType() == DocumentChange.Type.ADDED)
                         newDocs.add(dc.getDocument());
                 }
-                if(!newDocs.isEmpty())
+                if(!newDocs.isEmpty()){
                     ((ChatFragment)fragments[0]).updateMessageList(newDocs);
+                    ((FriendsListFragment)fragments[1]).updateUserList(newDocs);
+                }
             }
         });
     }
@@ -120,5 +122,13 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
     @Override
     public void onMessageSubmit(View view) {
         ((ChatFragment)fragments[0]).submitMessage();
+    }
+
+
+    @Override
+    public void onUserSelect(View v, int pos, long id) {
+        String name = ((UserListAdapter.ViewHolder)v.getTag()).username.getText().toString();
+        ((ChatFragment)fragments[0]).updateDisplayedList(name);
+        ((FriendsListFragment)fragments[1]).updateDisplayedUser(v, pos, id);
     }
 }
