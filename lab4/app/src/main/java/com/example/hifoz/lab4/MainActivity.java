@@ -1,5 +1,8 @@
 package com.example.hifoz.lab4;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -20,13 +23,14 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements ChatFragment.OnMessageSubmitListener, FriendsListFragment.OnUserSelectListener{
     Fragment[] fragments;
-
+    ListenerRegistration listenerRegistration;
 
     private ViewPager viewPager;
     private TabPagerAdapter tabPagerAdapter;
@@ -41,11 +45,14 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
             signInUser();
         }
 
-
-        // Todo: Let the user select username themselves and store that name for future use
-        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName("Alice").build();
-        FBAuthInfo.user.updateProfile(profileUpdate);
-
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String name = sharedPrefs.getString("username", "NE");
+        if(name.equals("NE")){
+            registerName();
+        } else {
+            UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
+            FBAuthInfo.user.updateProfile(profileUpdate);
+        }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -67,36 +74,42 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         setupSnapshotListener();
     }
 
+    private void registerName() {
+        Intent intent = new Intent(this, RegisterActivity.class);
+
+        startActivity(intent);
+
+    }
+
     /**
      * Setup a listener to listen for new messages
      * On first call, this will get all messages stored
      */
     private void setupSnapshotListener() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("messages").orderBy("d").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        listenerRegistration = db.collection("messages").orderBy("d").addSnapshotListener(new EventListener<QuerySnapshot>() {
 
             @Override
             public void onEvent(@Nullable QuerySnapshot documentSnapshots, @Nullable FirebaseFirestoreException e) {
-                if(e != null){
+                if (e != null) {
                     System.out.println("Snapshot listener fail");
                     return;
-                } else if(documentSnapshots == null){
+                } else if (documentSnapshots == null) {
                     System.out.println("Snapshots are null");
                     return;
                 }
                 ArrayList<DocumentSnapshot> newDocs = new ArrayList<>();
-                for(DocumentChange dc : documentSnapshots.getDocumentChanges()){
-                    if(dc.getType() == DocumentChange.Type.ADDED)
+                for (DocumentChange dc : documentSnapshots.getDocumentChanges()) {
+                    if (dc.getType() == DocumentChange.Type.ADDED)
                         newDocs.add(dc.getDocument());
                 }
-                if(!newDocs.isEmpty()){
-                    ((ChatFragment)fragments[0]).updateMessageList(newDocs);
-                    ((FriendsListFragment)fragments[1]).updateUserList(newDocs);
+                if (!newDocs.isEmpty()) {
+                    ((ChatFragment) fragments[0]).updateMessageList(newDocs);
+                    ((FriendsListFragment) fragments[1]).updateUserList(newDocs);
                 }
             }
         });
     }
-
 
     /**
      * Signs the user in anonymously

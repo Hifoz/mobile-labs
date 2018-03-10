@@ -14,9 +14,10 @@ import android.widget.Toast;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.List;
 
-
+/**
+ * Fragment for the friendslist tab
+ */
 public class FriendsListFragment extends Fragment {
     OnUserSelectListener callback;
     ArrayList<String> usernames;
@@ -32,6 +33,12 @@ public class FriendsListFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_friends_list, container, false);
     }
 
+    /**
+     * Gives visual feedback in friends list tab to let user know whos' messages are now displayed in the chat tab
+     * @param v the view from the listview onitemclicklistener
+     * @param pos the position from the listview onitemclicklistener
+     * @param id the id from the listview onitemclicklistener
+     */
     public void updateDisplayedUser(View v, int pos, long id) {
         if(pos == 0)
             Toast.makeText(getContext(), "Now showing posts all users", Toast.LENGTH_SHORT).show();
@@ -39,6 +46,10 @@ public class FriendsListFragment extends Fragment {
             Toast.makeText(getContext(), "Now showing posts from " + usernames.get(pos), Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Updates the list of users by extracting user info from new messages
+     * @param newDocs from Firestore DB containing all new messages
+     */
     public void updateUserList(ArrayList<DocumentSnapshot> newDocs){
         if(usernames == null){
             usernames = new ArrayList<>();
@@ -63,6 +74,11 @@ public class FriendsListFragment extends Fragment {
         });
     }
 
+    /**
+     * An interface that is required to implement on any activity using this fragment
+     * To make sure it has the onUserSelect(View, int, long) function that is called by a button in the fragment XML.
+     * This Listener can also be made to serve as a communications channel to the activity and other fragments
+     */
     public interface OnUserSelectListener{
         void onUserSelect(View v, int pos, long id);
     }
@@ -85,7 +101,7 @@ public class FriendsListFragment extends Fragment {
 
     public void onUserSelect(View v, int pos, long id){
         callback.onUserSelect(v, pos, id);
-    };
+    }
 
 
 

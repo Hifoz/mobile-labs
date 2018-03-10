@@ -23,7 +23,7 @@ import java.util.HashMap;
 
 
 /**
- * Fragment containing the chat tab
+ * Fragment for the chat tab
  */
 public class ChatFragment extends Fragment {
     OnMessageSubmitListener callback;
@@ -46,6 +46,10 @@ public class ChatFragment extends Fragment {
     }
 
 
+    /**
+     * Updates list of messages based on the documents sent in
+     * @param documents documents from Firestore DB containg all new messages
+     */
     public void updateMessageList(ArrayList<DocumentSnapshot> documents){
         if(messageList == null)
             messageList = new ArrayList<>();
@@ -61,14 +65,19 @@ public class ChatFragment extends Fragment {
         updateMessagesListView();
     }
 
+    /**
+     * Refreshes the list view.
+     */
     private void updateMessagesListView(){
         MessageListAdapter mla = new MessageListAdapter(getContext(), displayedMessagesList);
         ListView lv = getActivity().findViewById(R.id.chatLV);
         lv.setAdapter(mla);
-        // todo adjust scroll to bottom if user was at the bottom before change, otherwise maybe show indicator for new messages?
     }
 
-
+    /**
+     * Updates which messages are actually displayed on screen
+     * @param name name of the user who's messages you want to show, "show all" will show messages from all users
+     */
     public void updateDisplayedList(String name) {
         System.out.println(name);
         displayedName = name;
@@ -85,7 +94,7 @@ public class ChatFragment extends Fragment {
     }
 
     /**
-     * Send the message to the server
+     * Send the message to the Firestore DB
      */
     public void submitMessage() {
 
@@ -95,30 +104,30 @@ public class ChatFragment extends Fragment {
         if(messageText.isEmpty())
             return;
 
+        // Format the message for sending
         HashMap<String, Object> message = new HashMap<>();
         message.put("d", System.currentTimeMillis());
         message.put("u", FBAuthInfo.user.getDisplayName());
         message.put("m", messageText);
 
+        // Send the message
         firestoreDB.collection("messages")
-                .add(message)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Toast.makeText(getActivity(), "Message sent.", Toast.LENGTH_SHORT).show();
-                        System.out.println("Message sent.");
-                        et.setText("");
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Toast.makeText(getActivity(), "Failed to send message.", Toast.LENGTH_LONG).show();
-                                                System.out.println("Failed to send message.");
-                                            }
-                                        }
+            .add(message)
+            .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+                    Toast.makeText(getActivity(), "Message sent.", Toast.LENGTH_SHORT).show();
+                    System.out.println("Message sent.");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getActivity(), "Failed to send message.", Toast.LENGTH_LONG).show();
+                    System.out.println("Failed to send message.");
+                }
+            }
         );
-
-
+        et.setText("");
     }
 
 
