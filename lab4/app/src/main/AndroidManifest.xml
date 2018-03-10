@@ -18,14 +18,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".RegisterActivity" />
 
         <service
-            android:name=".MyService"
+            android:name=".BackgroundService"
             android:enabled="true"
-            android:exported="true"
-            android:permission="" />
-
-        <activity android:name=".RegisterActivity"></activity>
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         if(FBAuthInfo.user == null){
             signInUser();
         }
+        BackgroundService.appIsActive = true;
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String name = sharedPrefs.getString("username", "NE");
@@ -130,6 +131,25 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
             }
         );
     }
+
+
+    @Override
+    public void onPause() {
+        BackgroundService.appIsActive = false;
+        super.onPause();
+    }
+    @Override
+    public void onResume() {
+        BackgroundService.appIsActive = true;
+        super.onResume();
+    }
+    @Override
+    public void onDestroy() {
+        BackgroundService.appIsActive = false;
+        super.onDestroy();
+    }
+
+
 
 
     @Override
