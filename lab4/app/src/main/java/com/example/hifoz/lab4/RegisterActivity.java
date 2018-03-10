@@ -37,7 +37,6 @@ public class RegisterActivity extends AppCompatActivity {
         finishActivity();
     }
 
-    @SuppressLint("ApplySharedPref") // Becasue I want it to be written immediatley
     private void finishActivity() {
         // Get the name
         String name = ((EditText)findViewById(R.id.usernameET)).getText().toString();
@@ -50,7 +49,7 @@ public class RegisterActivity extends AppCompatActivity {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putString("username", name);
-        editor.commit();
+        editor.apply();
 
         // Update profile
         UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).build();

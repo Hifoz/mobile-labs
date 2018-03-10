@@ -63,6 +63,7 @@ public class ChatFragment extends Fragment {
                 displayedMessagesList.add(newMessage);
         }
         updateMessagesListView();
+        BackgroundService.messageCount = messageList.size();
     }
 
     /**

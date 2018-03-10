@@ -30,7 +30,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements ChatFragment.OnMessageSubmitListener, FriendsListFragment.OnUserSelectListener{
     Fragment[] fragments;
-    ListenerRegistration listenerRegistration;
+    ListenerRegistration snapshotListener;
 
     private ViewPager viewPager;
     private TabPagerAdapter tabPagerAdapter;
@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         if(FBAuthInfo.user == null){
             signInUser();
         }
-        BackgroundService.appIsActive = true;
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String name = sharedPrefs.getString("username", "NE");
@@ -73,8 +72,16 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         tabLayout.setupWithViewPager(viewPager);
 
         setupSnapshotListener();
+
+        BackgroundService.appIsActive = true;
+        Intent intent = new Intent(this, BackgroundService.class);
+        startService(intent);
+
     }
 
+    /**
+     * Open name-registration activity
+     */
     private void registerName() {
         Intent intent = new Intent(this, RegisterActivity.class);
 
@@ -88,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
      */
     private void setupSnapshotListener() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        listenerRegistration = db.collection("messages").orderBy("d").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        snapshotListener = db.collection("messages").orderBy("d").addSnapshotListener(new EventListener<QuerySnapshot>() {
 
             @Override
             public void onEvent(@Nullable QuerySnapshot documentSnapshots, @Nullable FirebaseFirestoreException e) {
@@ -134,21 +141,25 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
 
 
     @Override
-    public void onPause() {
-        BackgroundService.appIsActive = false;
-        super.onPause();
-    }
-    @Override
     public void onResume() {
         BackgroundService.appIsActive = true;
+        //setupSnapshotListener();
         super.onResume();
     }
+
+    @Override
+    public void onPause() {
+        BackgroundService.appIsActive = false;
+        //snapshotListener.remove();
+        super.onPause();
+    }
+
     @Override
     public void onDestroy() {
         BackgroundService.appIsActive = false;
+        snapshotListener.remove();
         super.onDestroy();
     }
-
 
 
 
