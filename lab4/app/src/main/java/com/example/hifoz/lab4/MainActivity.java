@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -18,15 +17,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements ChatFragment.OnMessageSubmitListener, FriendsListFragment.OnUserSelectListener{
     Fragment[] fragments;
@@ -68,7 +59,16 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
 
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(viewPager);
-        // TODO Set icons for tabs
+        TabLayout.Tab tab0 = tabLayout.getTabAt(0);
+        TabLayout.Tab tab1 = tabLayout.getTabAt(1);
+        if(tab0 != null){
+            tab0.setIcon(R.drawable.ic_chat_bubble);
+            tab0.setText("");
+        }
+        if(tab1 != null){
+            tab1.setIcon(R.drawable.ic_people);
+            tab1.setText("");
+        }
 
         Intent intent = new Intent(this, BackgroundService.class);
         startService(intent);
