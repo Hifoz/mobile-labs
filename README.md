@@ -13,5 +13,5 @@ Very simple RSS2.0 Reader.
 Exercise in sensors.
 Using sensors to move a ball around on the screen, with audio/haptic feedback on edge collision.
 
-### Lab4
+### Lab4 (Not finished)
 Chat application using Firebase FireStore
