@@ -10,7 +10,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-
+/**
+ * Adapter for the chat messages
+ */
 public class MessageListAdapter extends ArrayAdapter<Message> {
     private ArrayList<Message> messages;
 
@@ -48,7 +50,9 @@ public class MessageListAdapter extends ArrayAdapter<Message> {
     }
 
 
-
+    /**
+     * Structure containing the items in the view
+     */
     private class ViewHolder{
         TextView messageUser;
         TextView messageTimeStamp;

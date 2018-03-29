@@ -11,11 +11,8 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompatBase;
-import android.support.v4.app.NotificationManagerCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -23,20 +20,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.ArrayList;
 
 public class BackgroundService extends Service {
     public static boolean appIsActive;
     public static int messageCount = 0;
-
-    /**
-     * TODO Make it all work
-     * - Currently crashing when opening app from notification
-     * - Only getting notification if app is closed, not if it is placed in background
-     * - Getting notification even when there are no new messages
-     *
-     */
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -55,41 +42,51 @@ public class BackgroundService extends Service {
             }
         });
         startMessageChecker();
-        System.out.println("starting");
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     @Override
     public void onDestroy(){
         stopMessageChecker();
-        System.out.println("stopping");
         super.onDestroy();
     }
 
 
-    long lastUpdateTime;
+    // Helper variables for update
     private boolean isRunning = false;
     private Handler handler = new Handler();
 
+    /**
+     * Runnable running periodically to check for new messages
+     */
     private Runnable update = new Runnable() {
         @Override
         public void run() {
-            System.out.println("updating...");
             if(!appIsActive)
                 checkForNewMessages();
-            handler.postDelayed(this, 1000); // TODO delay should be a setting the user can set
+            handler.postDelayed(this, 1000);
         }
     };
 
 
+    /**
+     *Start checking for messages periodically
+     */
     public void startMessageChecker() {
         if(isRunning)
             return;
-        lastUpdateTime = SystemClock.uptimeMillis();
         handler.removeCallbacks(update);
         handler.post(update);
         isRunning = true;
     }
 
+    /**
+     * Stop checking for messages
+     */
     public void stopMessageChecker(){
         handler.removeCallbacks(update);
         isRunning = false;
@@ -122,7 +119,6 @@ public class BackgroundService extends Service {
         NotificationManager notifManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 
         Intent intent = new Intent(this, MainActivity.class);
-        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         PendingIntent pI = PendingIntent.getActivity(this, 0, intent, 0);
@@ -145,7 +141,7 @@ public class BackgroundService extends Service {
     }
 
     /**
-     * Sets up a notification channel for v26 and up
+     * Android 26 (Oreo) and above needs a notification channel to be set up in order to send notifications
      */
     private void setupNotificationChannel(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -157,10 +153,4 @@ public class BackgroundService extends Service {
         }
     }
 
-
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

@@ -166,7 +166,10 @@ public class ChatFragment extends Fragment {
         }
     }
 
-
+    /**
+     * Need to have this because otherwise this fragment's xml will complain.
+     * The function is never actually called because it actually calls a function with the same name in the parent activity.
+     */
     public void onMessageSubmit(View v){
         callback.onMessageSubmit(v);
     }
@@ -191,6 +194,8 @@ public class ChatFragment extends Fragment {
      * On first call, this will get all messages stored
      */
     private void setupSnapshotListener() {
+        messageList = null; // Make sure the list is empty
+        displayedMessagesList = null;
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         snapshotListener = db.collection("messages").orderBy("d").addSnapshotListener(new EventListener<QuerySnapshot>() {
 

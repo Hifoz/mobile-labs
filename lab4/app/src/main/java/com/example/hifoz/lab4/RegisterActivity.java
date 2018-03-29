@@ -4,25 +4,30 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.UserProfileChangeRequest;
 
+import java.util.Random;
+
 public class RegisterActivity extends AppCompatActivity {
 
+    @SuppressLint("SetTextI18n") // Suppressed because i18n isn't relevant to the random username
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // TODO make username suggestion.
-
+        Random rng = new Random(System.currentTimeMillis());
+        ((EditText)findViewById(R.id.usernameET)).setText("user" + rng.nextInt());
 
         findViewById(R.id.usernameBTN).setOnClickListener(new View.OnClickListener() {
             @Override

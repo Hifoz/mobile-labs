@@ -17,11 +17,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.ListenerRegistration;
 
 public class MainActivity extends AppCompatActivity implements ChatFragment.OnMessageSubmitListener, FriendsListFragment.OnUserSelectListener{
-    Fragment[] fragments;
-    ListenerRegistration snapshotListener;
+    public Fragment[] fragments;
 
     private ViewPager viewPager;
     private TabPagerAdapter tabPagerAdapter;

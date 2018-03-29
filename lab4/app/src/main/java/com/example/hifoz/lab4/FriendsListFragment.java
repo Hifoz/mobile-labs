@@ -99,6 +99,10 @@ public class FriendsListFragment extends Fragment {
 
 
 
+    /**
+     * Need to have this because otherwise this fragment's xml will complain.
+     * The function is never actually called because it actually calls a function with the same name in the parent activity.
+     */
     public void onUserSelect(View v, int pos, long id){
         callback.onUserSelect(v, pos, id);
     }
