@@ -11,9 +11,12 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:taskAffinity=""
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="com.google.tho.TARGET_NOTIFICATION"/>
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>

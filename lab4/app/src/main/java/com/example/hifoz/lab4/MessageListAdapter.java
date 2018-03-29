@@ -16,6 +16,7 @@ public class MessageListAdapter extends ArrayAdapter<Message> {
 
     public MessageListAdapter(Context context, ArrayList<Message> messages) {
         super(context, R.layout.message_layout, messages);
+
         this.messages = messages;
     }
 

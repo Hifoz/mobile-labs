@@ -2,8 +2,10 @@ package com.example.hifoz.lab4;
 
 
 import android.content.Context;
+import android.net.sip.SipSession;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,9 +16,14 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +37,8 @@ public class ChatFragment extends Fragment {
     private ArrayList<Message> messageList;
     private ArrayList<Message> displayedMessagesList;
     String displayedName = "Show All";
+    Context context;
+    ListenerRegistration snapshotListener;
 
     FirebaseFirestore firestoreDB = FirebaseFirestore.getInstance();
 
@@ -70,8 +79,8 @@ public class ChatFragment extends Fragment {
      * Refreshes the list view.
      */
     private void updateMessagesListView(){
-        MessageListAdapter mla = new MessageListAdapter(getContext(), displayedMessagesList);
-        ListView lv = getActivity().findViewById(R.id.chatLV);
+        MessageListAdapter mla = new MessageListAdapter(context, displayedMessagesList);
+        ListView lv = ((MainActivity)context).findViewById(R.id.chatLV);
         lv.setAdapter(mla);
     }
 
@@ -148,6 +157,7 @@ public class ChatFragment extends Fragment {
      */
     public void onAttach(Context context){
         super.onAttach(context);
+        this.context = context;
 
         try{
             callback = (OnMessageSubmitListener)getActivity();
@@ -159,6 +169,51 @@ public class ChatFragment extends Fragment {
 
     public void onMessageSubmit(View v){
         callback.onMessageSubmit(v);
+    }
+
+    @Override
+    public void onResume() {
+        //BackgroundService.appIsActive = true;
+        setupSnapshotListener();
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        //BackgroundService.appIsActive = false;
+        snapshotListener.remove();
+        super.onPause();
+    }
+
+
+    /**
+     * Setup a listener to listen for new messages
+     * On first call, this will get all messages stored
+     */
+    private void setupSnapshotListener() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        snapshotListener = db.collection("messages").orderBy("d").addSnapshotListener(new EventListener<QuerySnapshot>() {
+
+            @Override
+            public void onEvent(@Nullable QuerySnapshot documentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    System.out.println("Snapshot listener fail");
+                    return;
+                } else if (documentSnapshots == null) {
+                    System.out.println("Snapshots are null");
+                    return;
+                }
+                ArrayList<DocumentSnapshot> newDocs = new ArrayList<>();
+                for (DocumentChange dc : documentSnapshots.getDocumentChanges()) {
+                    if (dc.getType() == DocumentChange.Type.ADDED)
+                        newDocs.add(dc.getDocument());
+                }
+                if (!newDocs.isEmpty()) {
+                    updateMessageList(newDocs);
+                    ((FriendsListFragment)((MainActivity)getActivity()).fragments[1]).updateUserList(newDocs);
+                }
+            }
+        });
     }
 
 

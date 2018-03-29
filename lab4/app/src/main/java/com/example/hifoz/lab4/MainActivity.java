@@ -61,8 +61,6 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         fragments = new Fragment[]{
           new ChatFragment(), new FriendsListFragment()
         };
-
-
         tabPagerAdapter = new TabPagerAdapter(getSupportFragmentManager(), fragments);
 
         viewPager = findViewById(R.id.container);
@@ -70,13 +68,18 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
 
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(viewPager);
+        // TODO Set icons for tabs
 
-        setupSnapshotListener();
-
-        BackgroundService.appIsActive = true;
         Intent intent = new Intent(this, BackgroundService.class);
         startService(intent);
+        BackgroundService.appIsActive = true;
 
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
     }
 
     /**
@@ -87,36 +90,6 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
 
         startActivity(intent);
 
-    }
-
-    /**
-     * Setup a listener to listen for new messages
-     * On first call, this will get all messages stored
-     */
-    private void setupSnapshotListener() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        snapshotListener = db.collection("messages").orderBy("d").addSnapshotListener(new EventListener<QuerySnapshot>() {
-
-            @Override
-            public void onEvent(@Nullable QuerySnapshot documentSnapshots, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    System.out.println("Snapshot listener fail");
-                    return;
-                } else if (documentSnapshots == null) {
-                    System.out.println("Snapshots are null");
-                    return;
-                }
-                ArrayList<DocumentSnapshot> newDocs = new ArrayList<>();
-                for (DocumentChange dc : documentSnapshots.getDocumentChanges()) {
-                    if (dc.getType() == DocumentChange.Type.ADDED)
-                        newDocs.add(dc.getDocument());
-                }
-                if (!newDocs.isEmpty()) {
-                    ((ChatFragment) fragments[0]).updateMessageList(newDocs);
-                    ((FriendsListFragment) fragments[1]).updateUserList(newDocs);
-                }
-            }
-        });
     }
 
     /**
@@ -143,25 +116,14 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
     @Override
     public void onResume() {
         BackgroundService.appIsActive = true;
-        //setupSnapshotListener();
         super.onResume();
     }
 
     @Override
     public void onPause() {
         BackgroundService.appIsActive = false;
-        //snapshotListener.remove();
         super.onPause();
     }
-
-    @Override
-    public void onDestroy() {
-        BackgroundService.appIsActive = false;
-        snapshotListener.remove();
-        super.onDestroy();
-    }
-
-
 
     @Override
     public void onMessageSubmit(View view) {

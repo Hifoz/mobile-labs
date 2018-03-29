@@ -38,10 +38,22 @@ public class BackgroundService extends Service {
      */
 
 
-
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
 
     @Override
     public void onCreate(){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference msgRef = db.collection("messages");
+        msgRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                QuerySnapshot result = task.getResult();
+                messageCount = result.size();
+            }
+        });
         startMessageChecker();
         System.out.println("starting");
     }
@@ -110,12 +122,14 @@ public class BackgroundService extends Service {
         NotificationManager notifManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
         PendingIntent pI = PendingIntent.getActivity(this, 0, intent, 0);
 
         setupNotificationChannel();
 
-        Notification notification = new NotificationCompat.Builder(this, NotificationCompat.CATEGORY_MESSAGE)
+        Notification notification = new NotificationCompat.Builder(getApplicationContext(), NotificationCompat.CATEGORY_MESSAGE)
                 .setContentTitle("New messages in lab4")
                 .setContentText(newMessageCount + " new messages since your last visit")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -126,7 +140,8 @@ public class BackgroundService extends Service {
                 .setAutoCancel(true)
                 .build();
 
-        notifManager.notify(421337, notification);
+        if(notifManager != null)
+            notifManager.notify(421337, notification);
     }
 
     /**
