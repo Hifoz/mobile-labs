@@ -20,7 +20,9 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-
+/**
+ * Background service for checking for new messages periodically
+ */
 public class BackgroundService extends Service {
     public static boolean appIsActive;
     public static int messageCount = 0;

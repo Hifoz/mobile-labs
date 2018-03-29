@@ -18,6 +18,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
+/**
+ * Main Activity
+ */
 public class MainActivity extends AppCompatActivity implements ChatFragment.OnMessageSubmitListener, FriendsListFragment.OnUserSelectListener{
     public Fragment[] fragments;
 
@@ -29,11 +32,13 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /*
+         * Authenticate user:
+         */
         FBAuthInfo.init();
         if(FBAuthInfo.user == null){
             signInUser();
         }
-
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String name = sharedPrefs.getString("username", "NE");
         if(name.equals("NE")){
@@ -43,10 +48,11 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
             FBAuthInfo.user.updateProfile(profileUpdate);
         }
 
+        /*
+         *Set up fragments and tabs:
+         */
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
         fragments = new Fragment[]{
           new ChatFragment(), new FriendsListFragment()
         };
@@ -55,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         viewPager = findViewById(R.id.container);
         viewPager.setAdapter(tabPagerAdapter);
 
+        // Set tab icons and remove text:
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(viewPager);
         TabLayout.Tab tab0 = tabLayout.getTabAt(0);
@@ -68,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
             tab1.setText("");
         }
 
+        /*
+         * Start background service:
+         */
         Intent intent = new Intent(this, BackgroundService.class);
         startService(intent);
         BackgroundService.appIsActive = true;
@@ -123,12 +133,19 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         super.onPause();
     }
 
+    /**
+     * Called when the user submits a message. Redirects the view to the chat fragment for handling
+     */
     @Override
     public void onMessageSubmit(View view) {
         ((ChatFragment)fragments[0]).submitMessage();
     }
 
 
+    /**
+     * Called when the user select sa username in the friends tab. Redirects to the friends fragment for handeling
+     * @param pos position of username clicked
+     */
     @Override
     public void onUserSelect(View v, int pos, long id) {
         String name = ((UserListAdapter.ViewHolder)v.getTag()).username.getText().toString();

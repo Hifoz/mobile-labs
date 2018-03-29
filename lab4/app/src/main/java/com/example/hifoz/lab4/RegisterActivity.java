@@ -18,6 +18,9 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 
 import java.util.Random;
 
+/**
+ * Activity for registering a username for a new user
+ */
 public class RegisterActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n") // Suppressed because i18n isn't relevant to the random username
