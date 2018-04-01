@@ -61,7 +61,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Update profile
         UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
-        FBAuthInfo.user.updateProfile(profileUpdate);
+        if(FBAuthInfo.user != null)
+            FBAuthInfo.user.updateProfile(profileUpdate);
 
         Toast.makeText(RegisterActivity.this, "Username saved as \"" + name + "\"", Toast.LENGTH_LONG).show();
 

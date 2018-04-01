@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -39,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         if(FBAuthInfo.user == null){
             signInUser();
         }
+
+        System.out.println("USER NULL? MA " + (FBAuthInfo.user == null));
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String name = sharedPrefs.getString("username", "NE");
         if(name.equals("NE")){
@@ -49,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
         }
 
         /*
-         *Set up fragments and tabs:
+         * Set up fragments and tabs:
          */
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -110,14 +113,28 @@ public class MainActivity extends AppCompatActivity implements ChatFragment.OnMe
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()) {
                         FBAuthInfo.user = FBAuthInfo.auth.getCurrentUser();
+                        Toast.makeText(MainActivity.this, "Authenticated", Toast.LENGTH_LONG).show();
+                        System.out.println("Authenticated");
+
+                        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        String name = sharedPrefs.getString("username", "NE");
+                        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
+                        FBAuthInfo.user.updateProfile(profileUpdate);
+
                     } else {
                         Toast.makeText(MainActivity.this, "Failed to authenticate", Toast.LENGTH_LONG).show();
-
+                        System.out.println("Failed to authenticate");
                     }
 
                 }
             }
-        );
+        ).addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(MainActivity.this, "Failed to authenticate.", Toast.LENGTH_LONG).show();
+                System.out.println("Failed to authenticate.");
+            }
+        });
     }
 
 
