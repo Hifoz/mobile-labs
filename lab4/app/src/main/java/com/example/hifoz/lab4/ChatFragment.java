@@ -2,8 +2,10 @@ package com.example.hifoz.lab4;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.sip.SipSession;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -114,10 +116,13 @@ public class ChatFragment extends Fragment {
         if(messageText.isEmpty())
             return;
 
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        String name = sharedPrefs.getString("username", "NE");
+
         // Format the message for sending
         HashMap<String, Object> message = new HashMap<>();
         message.put("d", System.currentTimeMillis());
-        message.put("u", FBAuthInfo.user.getDisplayName());
+        message.put("u", name);
         message.put("m", messageText);
 
         // Send the message
